@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 use std::io;
 use std::io::ErrorKind::WouldBlock;
 use std::marker::PhantomData;
-use std::net::{IpAddr, SocketAddr};
+use std::net::{IpAddr, SocketAddr, Ipv4Addr};
 use std::{
     future::Future,
     pin::Pin,
@@ -49,8 +49,9 @@ impl<AF: AddressFamily> FSM<AF> {
     pub fn new(
         services: &Services,
         allowed_ip: Vec<IpAddr>,
+        interface: &Ipv4Addr,
     ) -> io::Result<(FSM<AF>, mpsc::UnboundedSender<Command>)> {
-        let std_socket = AF::bind()?;
+        let std_socket = AF::bind(interface)?;
         let socket = UdpSocket::from_std(std_socket)?;
 
         let (tx, rx) = mpsc::unbounded_channel();
@@ -201,7 +202,7 @@ impl<AF: AddressFamily> FSM<AF> {
     }
 
     fn add_ip_rr(&self, hostname: &Name, mut builder: AnswerBuilder, ttl: u32) -> AnswerBuilder {
-        let interfaces = match get_if_addrs() {
+        /*let interfaces = match get_if_addrs() {
             Ok(interfaces) => interfaces,
             Err(err) => {
                 error!("could not get list of interfaces: {}", err);
@@ -229,7 +230,7 @@ impl<AF: AddressFamily> FSM<AF> {
                 }
                 _ => (),
             }
-        }
+        }*/
 
         builder
     }

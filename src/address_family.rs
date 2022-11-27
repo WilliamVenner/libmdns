@@ -28,11 +28,12 @@ pub trait AddressFamily {
         Socket::new(Self::DOMAIN, Type::DGRAM, Some(Protocol::UDP))
     }
 
-    fn bind() -> io::Result<UdpSocket> {
+    fn bind(interface: &Ipv4Addr) -> io::Result<UdpSocket> {
         let addr: SockAddr = SocketAddr::new(Self::ANY_ADDR.into(), MDNS_PORT).into();
         let socket = Self::udp_socket()?;
         socket.set_reuse_address(true)?;
         socket.set_nonblocking(true)?;
+        socket.set_multicast_if_v4(interface)?;
 
         #[cfg(not(windows))]
         #[cfg(not(target_os = "illumos"))]
